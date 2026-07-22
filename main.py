@@ -23,8 +23,7 @@ WHERE o.city = 'Boston'
 # STEP 2
 df_zero_emp = pd.read_sql("""
 SELECT o.officeCode,
-       o.city,
-       COUNT(e.employeeNumber) AS numemployees
+       o.city
 FROM offices o
 LEFT JOIN employees e
     ON o.officeCode = e.officeCode
@@ -147,10 +146,11 @@ WHERE od.productCode IN (
     FROM orderdetails od2
     JOIN orders ord2
         ON od2.orderNumber = ord2.orderNumber
+    JOIN customers c2
+        ON ord2.customerNumber = c2.customerNumber
     GROUP BY od2.productCode
-    HAVING COUNT(DISTINCT ord2.customerNumber) < 20
+    HAVING COUNT(DISTINCT c2.customerNumber) < 20
 )
-ORDER BY e.employeeNumber
 """, conn)
 
 conn.close()
