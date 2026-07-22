@@ -28,7 +28,7 @@ FROM offices o
 LEFT JOIN employees e
     ON o.officeCode = e.officeCode
 GROUP BY o.officeCode, o.city
-HAVING COUNT(e.employeeNumber) = 0
+HAVING COUNT(e.officeCode) = 0
 """, conn)
 
 # STEP 3
@@ -107,8 +107,7 @@ JOIN orderdetails od
     ON p.productCode = od.productCode
 JOIN orders o
     ON od.orderNumber = o.orderNumber
-GROUP BY p.productCode,
-         p.productName
+GROUP BY p.productCode, p.productName
 ORDER BY numpurchasers DESC
 """, conn)
 
@@ -121,20 +120,18 @@ FROM offices o
 LEFT JOIN employees e
     ON o.officeCode = e.officeCode
 LEFT JOIN customers c
-    ON e.employeeNumber = c.salesRepEmployeeNumber
-GROUP BY o.officeCode,
-         o.city
-ORDER BY n_customers DESC
+    ON c.salesRepEmployeeNumber = e.employeeNumber
+GROUP BY o.officeCode, o.city
 """, conn)
 
 # STEP 10
 df_under_20 = pd.read_sql("""
 SELECT DISTINCT
-       e.employeeNumber,
-       e.firstName,
-       e.lastName,
-       o.city,
-       o.officeCode
+    e.employeeNumber,
+    e.firstName,
+    e.lastName,
+    o.city,
+    o.officeCode
 FROM employees e
 JOIN offices o
     ON e.officeCode = o.officeCode
@@ -149,9 +146,10 @@ WHERE od.productCode IN (
     FROM orderdetails od2
     JOIN orders ord2
         ON od2.orderNumber = ord2.orderNumber
+    JOIN customers c2
+        ON ord2.customerNumber = c2.customerNumber
     GROUP BY od2.productCode
-    HAVING COUNT(DISTINCT ord2.customerNumber) < 20
+    HAVING COUNT(DISTINCT c2.customerNumber) < 20
 )
 """, conn)
-
 conn.close()
